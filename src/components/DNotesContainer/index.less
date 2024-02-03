@@ -1,0 +1,68 @@
+.dnotes-container {
+	margin: 5px 0px 0 5px;
+	height: calc(100vh - 106px);
+	padding: 5px 1px 5px 5px;
+	overflow: auto;
+
+	.dnotes-item {
+		position: relative;
+		background-color: #f8f8f8;
+		margin: 10px 0;
+		text-align: start;
+		min-height: 50px;
+		margin-right: 4px;
+		// max-height: 250px;
+		overflow: hidden;
+		:hover {
+			cursor: pointer;
+		}
+		.dnotes-item-top {
+			height: 10px;
+			background-color: #dfdfdf;
+		}
+		.dnotes-item-content {
+			padding: 10px 10px 0 10px;
+			line-height: 30px;
+			word-wrap: break-word;
+			/* 火狐 */
+			-moz-user-select: none;
+			/* Safari 和 欧朋 */
+			-webkit-user-select: none;
+			/* IE10+ and Edge */
+			-ms-user-select: none;
+			/* Standard syntax 标准语法(谷歌) */
+			user-select: none;
+		}
+		.dnotes-item-bottom {
+			position: absolute;
+			bottom: 0;
+			right: 0;
+			width: 0px;
+			height: 0px;
+			background-color: #fff;
+			border-style: solid;
+			border-width: 20px 20px 0 0;
+			border-color: #f1f1f1 transparent transparent transparent;
+			border-top-left-radius: 3px;
+			.anticon-close {
+				display: none;
+				position: absolute;
+				width: 20px;
+				height: 20px;
+				top: -20px;
+				left: 0;
+				background-color: #f7f7f7;
+			}
+		}
+		&:hover {
+			.anticon-close {
+				display: block;
+			}
+		}
+	}
+}
+.dnotes-container {
+	.dnotes-item:first-child {
+		margin-top: 0;
+	}
+}

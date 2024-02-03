@@ -1,0 +1,23 @@
+.logo.vite:hover {
+	filter: drop-shadow(0 0 2em #747bff);
+}
+
+.logo.react:hover {
+	filter: drop-shadow(0 0 2em #61dafb);
+}
+.ant-form-item-control-input-content {
+	display: flex;
+	justify-content: center;
+}
+.ant-modal-footer {
+	display: none;
+}
+.logout-confirm .ant-modal-footer {
+	display: block;
+}
+.modal-img-qrcode img {
+	width: 100%;
+}
+.ant-modal-title {
+	padding-right: 10px;
+}

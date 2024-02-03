@@ -1,0 +1,46 @@
+.rich-text-container {
+	width: 100%;
+	height: calc(100% - 40px);
+	display: flex;
+	flex-direction: column;
+	.rich-text-editor {
+		height: calc(100% - 40px);
+		overflow: hidden;
+		.w-e-text-container {
+			height: 100%;
+			overflow: hidden;
+
+			.w-e-scroll {
+				height: 100%;
+				overflow-x: hidden;
+				overflow-y: scroll;
+			}
+			p {
+				margin: 0;
+				text-align: start;
+			}
+			div {
+				text-align: start;
+			}
+		}
+	}
+	.rich-text-toolbar {
+		position: fixed;
+		bottom: 0;
+		height: 40px;
+		width: 100%;
+		position: relative;
+		.w-e-select-list {
+			// position: absolute;
+			bottom: 40px;
+			top: initial;
+		}
+		.w-e-menu-tooltip-v5:before {
+			top: -30px;
+		}
+		.w-e-menu-tooltip-v5:after {
+			top: -5px;
+			transform: rotateX(180deg);
+		}
+	}
+}
