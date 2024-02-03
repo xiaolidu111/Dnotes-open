@@ -5,7 +5,7 @@ export const getLocalDNotesList: () => IState[] = () =>
 	JSON.parse(window.localStorage.getItem('dNotesArr') as string) || [
 		{
 			id: -1,
-			text: '欢迎使用dNotes,双击修改笔记',
+			text: '欢迎使用dNotes,双击修改笔记，退出应用前请手动上传文件',
 			colorMode: ColorTheme.yellow,
 			lastModified: Date.now(),
 		},

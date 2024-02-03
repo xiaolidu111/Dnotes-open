@@ -18,7 +18,7 @@ export const dNotesReducer = createSlice({
 	initialState: [
 		{
 			id: 0,
-			text: '欢迎使用Dnotes,双击修改笔记',
+			text: '欢迎使用Dnotes,双击修改笔记，退出应用前请手动上传文件',
 		},
 	],
 	reducers: {
