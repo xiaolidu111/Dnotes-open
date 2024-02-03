@@ -502,26 +502,29 @@ export default function MainHeader(props: IMainHeaderProps) {
 		setOpen(false);
 		setLoginBtnDisable(false);
 	};
-	const hideLoginModal = async () => {
-		setLogoutopen(false);
-		// 重启应用
-		await relaunch();
+	const hideLoginModal = async (isLogout: boolean) => {
+		if (isLogout) {
+			// 清除本地的localstorage数据
+			localStorage.removeItem('created_at');
+			localStorage.removeItem('expires_in');
+			localStorage.removeItem('name');
+			localStorage.removeItem('scope');
+			localStorage.removeItem('refresh_token');
+			localStorage.removeItem('access_token');
+			localStorage.removeItem('sha');
+			localStorage.removeItem('dNotesArr');
+			localStorage.removeItem('avatar_url');
+			localStorage.removeItem('token_type');
+			// 重启应用
+			await relaunch();
+		} else {
+			setLogoutopen(false);
+		}
 	};
 
 	// 退出登录
 	const exitLoginandler = async () => {
 		// setLogoutopen(true);
-		// 清除本地的localstorage数据
-		localStorage.removeItem('created_at');
-		localStorage.removeItem('expires_in');
-		localStorage.removeItem('name');
-		localStorage.removeItem('scope');
-		localStorage.removeItem('refresh_token');
-		localStorage.removeItem('access_token');
-		localStorage.removeItem('sha');
-		localStorage.removeItem('dNotesArr');
-		localStorage.removeItem('avatar_url');
-		localStorage.removeItem('token_type');
 		setLogoutopen(true);
 	};
 	// 上传同步数据
@@ -763,8 +766,8 @@ export default function MainHeader(props: IMainHeaderProps) {
 			<Modal
 				title="退出登录"
 				open={logoutopen}
-				onOk={hideLoginModal}
-				onCancel={hideLoginModal}
+				onOk={() => hideLoginModal(true)}
+				onCancel={() => hideLoginModal(false)}
 				okText="确认"
 				cancelText="取消"
 				className="logout-confirm"
