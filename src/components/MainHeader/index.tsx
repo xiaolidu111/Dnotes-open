@@ -397,7 +397,7 @@ export default function MainHeader(props: IMainHeaderProps) {
 		let screenHeight = window.innerHeight;
 
 		let x, y;
-		let offset = Math.floor(Math.random() * 1) - 500;
+		let offset = Math.floor(Math.random() * 1) - 100;
 		if (screenWidth / 2 > innerPosition!.x) {
 			// 如果左上角在右边 向左
 			x = innerPosition!.x - offset;
@@ -419,7 +419,7 @@ export default function MainHeader(props: IMainHeaderProps) {
 			decorations: false,
 			width: 350,
 			height: 370,
-			center: false,
+			center: true,
 			x: x,
 			y: y,
 			// focus: true,
