@@ -173,14 +173,6 @@ export default function MainHeader(props: IMainHeaderProps) {
 								setLocalDNotesList(mergeList);
 								// 将数据上传到仓库中
 								// 将数据转换成字符串 转换成 base64格式
-								// const mergeListString = JSON.stringify(mergeList);
-								// const mergeListString = window.btoa(
-								// 	unescape(
-								// 		encodeURIComponent(
-								// 			JSON.stringify(mergeList)
-								// 		)
-								// 	)
-								// );
 								const mergeListString = encode64(
 									JSON.stringify(mergeList)
 								);
@@ -504,19 +496,27 @@ export default function MainHeader(props: IMainHeaderProps) {
 	};
 	const hideLoginModal = async (isLogout: boolean) => {
 		if (isLogout) {
-			// 清除本地的localstorage数据
-			localStorage.removeItem('created_at');
-			localStorage.removeItem('expires_in');
-			localStorage.removeItem('name');
-			localStorage.removeItem('scope');
-			localStorage.removeItem('refresh_token');
-			localStorage.removeItem('access_token');
-			localStorage.removeItem('sha');
-			localStorage.removeItem('dNotesArr');
-			localStorage.removeItem('avatar_url');
-			localStorage.removeItem('token_type');
-			// 重启应用
-			await relaunch();
+			// 上传好数据再同步
+			let flag = await uploadDataHandler(true);
+			if (flag) {
+				// 清除本地的localstorage数据
+				localStorage.removeItem('created_at');
+				localStorage.removeItem('expires_in');
+				localStorage.removeItem('name');
+				localStorage.removeItem('scope');
+				localStorage.removeItem('refresh_token');
+				localStorage.removeItem('access_token');
+				localStorage.removeItem('sha');
+				localStorage.removeItem('dNotesArr');
+				localStorage.removeItem('avatar_url');
+				localStorage.removeItem('token_type');
+
+				// 重启应用
+				console.log('重启应用');
+				await relaunch();
+			} else {
+				message.error('退出登录失败,请重试', 1000);
+			}
 		} else {
 			setLogoutopen(false);
 		}
@@ -528,14 +528,16 @@ export default function MainHeader(props: IMainHeaderProps) {
 		setLogoutopen(true);
 	};
 	// 上传同步数据
-	const uploadDataHandler = async () => {
+	const uploadDataHandler = async (showToast: boolean) => {
 		// 拉取数据 对比数据 上传数据
 		const name = getLocalstorageItem('name');
 		const access_token = getLocalstorageItem('access_token');
-		message.loading('正在同步数据...');
-		http.fetch(
-			`https://gitee.com/api/v5/repos/${name}/DNotes/contents/appdata%2Fappdata.txt?access_token=${access_token}`
-		)
+		showToast && message.loading('正在同步数据...');
+		// 查看文件内容信息
+		return http
+			.fetch(
+				`https://gitee.com/api/v5/repos/${name}/DNotes/contents/appdata%2Fappdata.txt?access_token=${access_token}`
+			)
 			.then((res: any) => {
 				console.log('先找下这个文件的信息', res);
 				const { sha, content } = res.data;
@@ -565,10 +567,6 @@ export default function MainHeader(props: IMainHeaderProps) {
 				setLocalDNotesList(mergeList);
 				// 将数据上传到仓库中
 				// 将数据转换成字符串 转换成 base64格式
-				// const mergeListString = JSON.stringify(mergeList);
-				// const mergeListString = window.btoa(
-				// 	unescape(encodeURIComponent(JSON.stringify(mergeList)))
-				// );
 				const mergeListString = encode64(JSON.stringify(mergeList));
 				console.log(
 					'mergeListString',
@@ -576,38 +574,46 @@ export default function MainHeader(props: IMainHeaderProps) {
 					JSON.stringify(mergeList)
 				);
 				// 将base64格式的内容上传
-				http.fetch(
-					`https://gitee.com/api/v5/repos/${name}/DNotes/contents/appdata%2Fappdata.txt`,
-					{
-						method: 'PUT',
-						body: http.Body.json({
-							access_token: access_token,
-							content: mergeListString,
-							sha: sha,
-							message: '上传文件',
-						}),
-					}
-				)
+				return http
+					.fetch(
+						`https://gitee.com/api/v5/repos/${name}/DNotes/contents/appdata%2Fappdata.txt`,
+						{
+							method: 'PUT',
+							body: http.Body.json({
+								access_token: access_token,
+								content: mergeListString,
+								sha: sha,
+								message: '上传文件',
+							}),
+						}
+					)
 					.then((res: any) => {
 						console.log('文件上传成功', res);
 						const { commit } = res.data;
 						if (!commit) {
 							throw new Error('文件上传失败，请重试');
 						}
-						message.destroy();
-						message.success('同步成功');
+						showToast && message.destroy();
+						showToast && message.success('同步成功');
+						return Promise.resolve(true);
 					})
 					.catch((err: any) => {
 						console.log('出错了', err);
-						message.destroy();
-						Message.error('文件上传失败，请重试', 1);
+						showToast && message.destroy();
+						showToast && Message.error('文件上传失败，请重试', 1);
 					});
 			})
 			.catch((err: any) => {
-				message.destroy();
-				Message.error('仓库中不存在该文件，请重新登录', 1);
+				showToast && message.destroy();
+				showToast && Message.error('仓库中不存在该文件，请重新登录', 1);
 			});
 	};
+	useEffect(() => {
+		// 每隔十分钟同步一次数据
+		setInterval(() => {
+			uploadDataHandler(false);
+		}, 60000);
+	}, []);
 	return (
 		<div
 			data-tauri-drag-region
@@ -622,7 +628,9 @@ export default function MainHeader(props: IMainHeaderProps) {
 			<div className={`${DEFAULTCLASS}-right`}>
 				<div
 					className={`${DEFAULTCLASS}-right-setting`}
-					onClick={uploadDataHandler}
+					onClick={() => {
+						uploadDataHandler(true);
+					}}
 				>
 					{avatarUrl !== '' && (
 						<Tooltip placement="left" title="同步数据">

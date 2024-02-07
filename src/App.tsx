@@ -10,10 +10,6 @@ import AddNotes from './components/AddNotes';
 function App() {
 	const [qrCode, setQrcode] = useState<string>('');
 	const [deviceCode, setDeviceCode] = useState<string>('');
-	//expires_in,
-	//interval,
-	//user_code,
-	//verification_url
 
 	const [searchText, setSearchText] = useState<string>('');
 	useEffect(() => {}, [searchText]);
