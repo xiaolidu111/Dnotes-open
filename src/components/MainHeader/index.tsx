@@ -609,7 +609,7 @@ export default function MainHeader(props: IMainHeaderProps) {
 			});
 	};
 	useEffect(() => {
-		// 每隔十分钟同步一次数据
+		// 每隔一分钟同步一次数据
 		setInterval(() => {
 			uploadDataHandler(false);
 		}, 60000);
@@ -785,3 +785,104 @@ export default function MainHeader(props: IMainHeaderProps) {
 		</div>
 	);
 }
+// const handleError = (err: any, message: string) => {
+// 	console.log('出错了', err);
+// 	Message.error(message, 1);
+// 	hideModal();
+// };
+
+// const setLocalStorageItems = (items: Record<string, any>) => {
+// 	Object.entries(items).forEach(([key, value]) => {
+// 		setLocalstorageItem(key, value);
+// 	});
+// };
+
+// const onFinish = async (values: any) => {
+// 	try {
+// 		setLoginBtnDisable(true);
+// 		console.log('Success:', values);
+// 		const { username, password } = values;
+
+// 		const res = await http.fetch(' https://gitee.com/oauth/token',  {
+// 			method: 'POST',
+// 			body: http.Body.json({
+// 				grant_type: 'password',
+// 				username: username,
+// 				password: password,
+// 				client_id: 'client_id',
+// 				client_secret: 'client_secret',
+// 				scope: 'user_info projects pull_requests issues notes keys hook groups gists enterprises',
+// 			}),
+// 		});
+
+// 		console.log('登录的数据', res);
+// 		const {
+// 			access_token,
+// 			created_at,
+// 			expires_in,
+// 			refresh_token,
+// 			scope,
+// 			token_type,
+// 		} = res.data;
+
+// 		if (!access_token) {
+// 			throw new Error('用户名或密码错误');
+// 		}
+
+// 		setLocalStorageItems({
+// 			access_token,
+// 			created_at,
+// 			expires_in,
+// 			refresh_token,
+// 			scope,
+// 			token_type,
+// 		});
+
+// 		// 获取用户信息
+// 		const userInfo = await getUserInfo(access_token);
+// 		// 处理文件信息
+// 		await handleFileInfo(access_token, userInfo.name);
+// 	} catch (err) {
+// 		handleError(err, '登录失败，请检查输入信息和网络');
+// 	}
+// };
+
+// const getUserInfo = async (access_token: string) => {
+// 	try {
+// 		const res = await http.fetch(
+// 			` https://gitee.com/api/v5/user?access_token=${access_token}`,
+// 			{
+// 				method: 'GET',
+// 			}
+// 		);
+// 		console.log('拿到的用户信息', res);
+// 		const { avatar_url, name } = res.data;
+// 		if (!avatar_url) {
+// 			throw new Error('用户信息获取失败');
+// 		}
+// 		setLocalStorageItems({ avatar_url, name });
+// 		setAvatarurl(avatar_url);
+// 		return { avatar_url, name };
+// 	} catch (err) {
+// 		handleError(err, '用户信息获取失败，请重试');
+// 	}
+// };
+
+// const handleFileInfo = async (access_token: string, name: string) => {
+// 	try {
+// 		const res = await http.fetch(
+// 			` https://gitee.com/api/v5/repos/${name}/DNotes/contents/appdata%2Fappdata.txt?access_token=${access_token}`
+// 		);
+// 		console.log('先找下这个文件的信息', res);
+// 		const { sha, content } = res.data;
+// 		if (!sha) {
+// 			throw new Error('不存在该文件，需要重新创建');
+// 		}
+// 		setLocalstorageItem('sha', sha);
+// 		console.log('content', content);
+// 		// ...省略了一些代码
+// 	} catch (err) {
+// 		console.log('获取文件信息失败，不存在文件需要重建', err);
+// 		// ...省略了一些代码
+// 	}
+// };

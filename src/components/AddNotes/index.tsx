@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import './index.less';
 import MainHeader from '../MainHeader';
-import TextArea from 'antd/es/input/TextArea';
+// import TextArea from 'antd/es/input/TextArea';
 import { WebviewWindow } from '@tauri-apps/api/window';
 
 import { getLocalDNotesList } from '../../utils';
