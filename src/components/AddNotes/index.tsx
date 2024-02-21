@@ -95,14 +95,10 @@ export default function AddNotes() {
 				colorMode={colorModeNow}
 				changeColorThemeHandler={changeColorThemeHandler}
 			/>
-			{/* <TextArea
-				value={textString}
-				onChange={textChangeHandler}
-				style={{ backgroundColor: colorModeNow?.content }}
-			/> */}
 			<RichText
 				setTextString={setTextString}
 				textString={initaltextString}
+				colorMode={colorModeNow}
 			/>
 		</div>
 	);

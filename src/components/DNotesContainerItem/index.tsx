@@ -56,6 +56,10 @@ export default function DNotesContainerItem(props: IDNotesContainerItemProps) {
 			});
 		}
 	};
+	const rightClickHandler = () => {
+		return;
+		console.log('右键');
+	};
 	return (
 		<div
 			className="dnotes-item"
@@ -64,6 +68,7 @@ export default function DNotesContainerItem(props: IDNotesContainerItemProps) {
 				backgroundColor:
 					colorMode?.content || ColorTheme.yellow.content,
 			}}
+			onContextMenu={rightClickHandler}
 		>
 			<div
 				className="dnotes-item-top"

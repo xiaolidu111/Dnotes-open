@@ -8,7 +8,6 @@ interface IDNotesContainerProps {
 }
 export default function DNotesContainer(props: IDNotesContainerProps) {
 	const { searchText } = props;
-	// const dNotesArr = useSelector((state: RootState) => state.dNotesArr);
 	const [dNotesArr, setDNotesArr] = useState<IState[]>(getLocalDNotesList());
 
 	useEffect(() => {

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import './App.css';
 import './index.less';
 import MainHeader from './components/MainHeader';
@@ -8,11 +8,7 @@ import { Route, Routes } from 'react-router-dom';
 import AddNotes from './components/AddNotes';
 
 function App() {
-	const [qrCode, setQrcode] = useState<string>('');
-	const [deviceCode, setDeviceCode] = useState<string>('');
-
 	const [searchText, setSearchText] = useState<string>('');
-	useEffect(() => {}, [searchText]);
 	return (
 		<div className="container">
 			<Routes>
@@ -20,10 +16,7 @@ function App() {
 					path="/"
 					element={
 						<>
-							<MainHeader
-								deviceCode={deviceCode}
-								qrCode={qrCode}
-							/>
+							<MainHeader />
 							<div className="main-title">便笺</div>
 							<SearchBox setSearchText={setSearchText} />
 							<DNotesContainer searchText={searchText} />

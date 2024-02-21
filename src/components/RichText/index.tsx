@@ -8,13 +8,14 @@ import {
 	IToolbarConfig,
 	DomEditor,
 } from '@wangeditor/editor';
-import { convertStringToHTML } from '../../utils';
+import { IColorMode } from '../../utils/constant';
 interface IRichTextProps {
 	setTextString: (html: string) => void;
 	textString?: string;
+	colorMode?: IColorMode;
 }
 export default function RichText(props: IRichTextProps) {
-	const { setTextString, textString } = props;
+	const { setTextString, textString, colorMode } = props;
 	// editor 实例
 	const [editor, setEditor] = useState<IDomEditor | null>(null); // TS 语法
 	console.log('此时的textString', textString);
@@ -25,11 +26,6 @@ export default function RichText(props: IRichTextProps) {
 		setHtml(textString as string);
 	}, [textString]);
 	useEffect(() => {
-		// if (textString) {
-		// 	setTextString(textString);
-		// } else {
-		// 	setTextString(html);
-		// }
 		setTextString(html);
 	}, [html]);
 
@@ -101,13 +97,19 @@ export default function RichText(props: IRichTextProps) {
 					onCreated={setEditor}
 					onChange={(editor) => setHtml(editor.getHtml())}
 					mode="default"
+					style={{
+						backgroundColor: colorMode?.content,
+					}}
 				/>
 				<Toolbar
 					className="rich-text-toolbar"
 					editor={editor}
 					defaultConfig={toolbarConfig}
 					mode="default"
-					style={{ borderBottom: '1px solid #ccc' }}
+					style={{
+						borderBottom: '1px solid #ccc',
+						backgroundColor: colorMode?.content,
+					}}
 				/>
 			</div>
 		</>

@@ -9,7 +9,7 @@
 		.w-e-text-container {
 			height: 100%;
 			overflow: hidden;
-
+			background-color: inherit;
 			.w-e-scroll {
 				height: 100%;
 				overflow-x: hidden;
@@ -21,6 +21,9 @@
 			}
 			div {
 				text-align: start;
+			}
+			.w-e-bar.w-e-hover-bar.w-e-bar-show {
+				display: none;
 			}
 		}
 	}
@@ -41,6 +44,9 @@
 		.w-e-menu-tooltip-v5:after {
 			top: -5px;
 			transform: rotateX(180deg);
+		}
+		.w-e-bar {
+			background-color: inherit;
 		}
 	}
 }
