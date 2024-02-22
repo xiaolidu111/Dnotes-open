@@ -1,0 +1,9 @@
+-   SearchBox
+    -   Props
+        -   setSearchText: 设置搜索文本的函数
+    -   inputChangeHandler
+        -   当输入框的值发生变化时，调用 setSearchText 函数更新搜索文本
+    -   return
+        -   返回一个 div 元素，包含以下子元素
+            -   Input: 输入框组件，placeholder 为"回车键搜索"，当值发生变化时调用 inputChangeHandler 函数
+            -   div: 显示搜索图标的容器，图标被注释掉了
