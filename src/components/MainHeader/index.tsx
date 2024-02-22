@@ -16,6 +16,7 @@ import { useLocation } from 'react-router-dom';
 import {
 	getLocalDNotesList,
 	getLocalstorageItem,
+	removeLocalstorageItem,
 	setLocalDNotesList,
 	setLocalstorageItem,
 } from '../../utils';
@@ -53,7 +54,7 @@ type FieldType = {
 	qrCode?: string;
 };
 export default function MainHeader(props: IMainHeaderProps) {
-	const [avatarUrl, setAvatarurl] = useState<string>(
+	const [avatarUrl, setAvatarurl] = useState<string | null>(
 		getLocalstorageItem('avatar_url') || ''
 	);
 
@@ -515,7 +516,7 @@ export default function MainHeader(props: IMainHeaderProps) {
 				console.log('重启应用');
 				await relaunch();
 			} else {
-				message.error('退出登录失败,请重试', 1000);
+				message.error('退出登录失败,请重试', 1);
 			}
 		} else {
 			setLogoutopen(false);
@@ -529,10 +530,11 @@ export default function MainHeader(props: IMainHeaderProps) {
 	};
 	// 上传同步数据
 	const uploadDataHandler = async (showToast: boolean) => {
+		await checkToken();
 		// 拉取数据 对比数据 上传数据
 		const name = getLocalstorageItem('name');
 		const access_token = getLocalstorageItem('access_token');
-		showToast && message.loading('正在同步数据...');
+		showToast && message.loading('正在同步数据...', 1);
 		// 查看文件内容信息
 		return http
 			.fetch(
@@ -594,7 +596,7 @@ export default function MainHeader(props: IMainHeaderProps) {
 							throw new Error('文件上传失败，请重试');
 						}
 						showToast && message.destroy();
-						showToast && message.success('同步成功');
+						showToast && message.success('同步成功', 1);
 						return Promise.resolve(true);
 					})
 					.catch((err: any) => {
@@ -608,11 +610,59 @@ export default function MainHeader(props: IMainHeaderProps) {
 				showToast && Message.error('仓库中不存在该文件，请重新登录', 1);
 			});
 	};
+	// 检查token是否过期
+	const checkToken = async () => {
+		const refresh_token = getLocalstorageItem('refresh_token');
+		return http
+			.fetch(
+				`https://gitee.com/oauth/token?grant_type=refresh_token&refresh_token=${refresh_token}`,
+				{
+					method: 'POST',
+				}
+			)
+			.then((res: any) => {
+				console.log('请求新的token', res);
+				const {
+					access_token,
+					created_at,
+					expires_in,
+					refresh_token,
+					scope,
+					token_type,
+				} = res.data;
+				if (!access_token) {
+					throw new Error('登录过期,请重新登录');
+				}
+				// 数据存入localstorage
+				setLocalstorageItem('access_token', access_token);
+				setLocalstorageItem('created_at', created_at);
+				setLocalstorageItem('expires_in', expires_in);
+				setLocalstorageItem('refresh_token', refresh_token);
+				setLocalstorageItem('scope', scope);
+				setLocalstorageItem('token_type', token_type);
+			})
+			.catch((err: any) => {
+				removeLocalstorageItem('access_token');
+				removeLocalstorageItem('created_at');
+				removeLocalstorageItem('expires_in');
+				removeLocalstorageItem('refresh_token');
+				removeLocalstorageItem('scope');
+				removeLocalstorageItem('token_type');
+				removeLocalstorageItem('avatar_url');
+				removeLocalstorageItem('dNotesArr');
+				removeLocalstorageItem('name');
+				removeLocalstorageItem('sha');
+				console.log('失败了');
+				message.error('登录过期,请重新登录', 1);
+				setAvatarurl(null);
+			});
+	};
 	useEffect(() => {
 		// 每隔一分钟同步一次数据
-		setInterval(() => {
-			uploadDataHandler(false);
-		}, 60000);
+		avatarUrl &&
+			setInterval(() => {
+				uploadDataHandler(false);
+			}, 60000);
 	}, []);
 	return (
 		<div
@@ -632,7 +682,7 @@ export default function MainHeader(props: IMainHeaderProps) {
 						uploadDataHandler(true);
 					}}
 				>
-					{avatarUrl !== '' && (
+					{avatarUrl !== '' && avatarUrl !== null && (
 						<Tooltip placement="left" title="同步数据">
 							<CloudUploadOutlined />
 						</Tooltip>

@@ -5,9 +5,7 @@ interface ISearchBoxProps {
 }
 export default function SearchBox(props: ISearchBoxProps) {
 	const { setSearchText } = props;
-	// const onSearch = () => {
-	// 	console.log('开始搜索1');
-	// };
+
 	const inputChangeHandler = (e: any) => {
 		setSearchText(e.target.value);
 	};

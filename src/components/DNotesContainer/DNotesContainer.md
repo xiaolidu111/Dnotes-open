@@ -1,0 +1,26 @@
+-   DNotesContainer
+    -   Props
+        -   searchText: 搜索文本
+    -   useState
+        -   dNotesArr: 使用 getLocalDNotesList 函数从本地存储获取的笔记列表
+    -   useEffect
+        -   第一次打开时设置本地存储
+            -   使用 setLocalDNotesList 函数将 dNotesArr 保存到本地存储
+        -   定时更新本地存储数据，当正在搜索时不更新
+            -   每隔 1 秒执行一次
+            -   如果 searchText 为空
+                -   使用 getLocalDNotesList 函数获取新的数据
+                -   使用 setDNotesArr 函数将新的数据渲染到页面
+        -   当搜索文案发生变化时，更改搜索的内容
+            -   使用 getLocalDNotesList 函数获取新的数据
+            -   如果 searchText 不为空
+                -   过滤出包含搜索文本的笔记
+            -   使用 setDNotesArr 函数将新的数据渲染到页面
+    -   deleteItemHandler
+        -   使用 getLocalDNotesList 函数获取新的数据
+        -   使用 setDNotesArr 函数将新的数据渲染到页面
+    -   return
+        -   遍历 dNotesArr
+            -   如果笔记文本存在且不为空，且笔记未被删除
+                -   返回 DNotesContainerItem 组件，传入 item 和 deleteItemHandler 作为 props
+            -   否则返回 null

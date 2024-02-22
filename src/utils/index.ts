@@ -17,6 +17,9 @@ export const setLocalDNotesList = (dNotesArr: IState[]) => {
 export const setLocalstorageItem = (name: string, payload: string) => {
 	window.localStorage.setItem(name, JSON.stringify(payload));
 };
+export const removeLocalstorageItem = (name: string) => {
+	window.localStorage.removeItem(name);
+};
 export const getLocalstorageItem = (name: string) => {
 	console.log(
 		// 'window.localStorage.getItem(name)',

@@ -1,0 +1,24 @@
+-   DNotesContainerItem
+    -   Props
+        -   id: 笔记的唯一标识
+        -   text: 笔记的文本内容
+        -   colorMode: 笔记的颜色模式
+        -   deleteItemHandler: 删除笔记的处理函数
+    -   deleteHandler
+        -   使用 getLocalDNotesList 函数获取所有的数据
+        -   删除当前 id 的数据或标记为已删除
+        -   使用 setLocalDNotesList 函数保存新的数据到本地存储
+        -   调用 deleteItemHandler 函数
+        -   关闭当前的 webview 窗口
+    -   editHandler
+        -   获取当前 id 的 webview 窗口
+        -   如果窗口存在，设置窗口为焦点
+        -   如果窗口不存在，创建新的 webview 窗口
+    -   rightClickHandler
+        -   返回空函数
+    -   return
+        -   返回一个 div 元素，包含以下子元素
+            -   一个空的 div 元素，用于显示笔记的顶部
+            -   一个 div 元素，用于显示笔记的内容
+            -   一个 div 元素，用于显示笔记的底部，点击时调用 deleteHandler 函数
+                -   包含一个 CloseOutlined 图标
