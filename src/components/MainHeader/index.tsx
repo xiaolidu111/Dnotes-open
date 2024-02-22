@@ -200,7 +200,7 @@ export default function MainHeader(props: IMainHeaderProps) {
 										const { commit } = res.data;
 										if (!commit) {
 											throw new Error(
-												'文件上传失败，请重试'
+												'文件上传失败，请重试1'
 											);
 										}
 										hideModal();
@@ -530,7 +530,6 @@ export default function MainHeader(props: IMainHeaderProps) {
 	};
 	// 上传同步数据
 	const uploadDataHandler = async (showToast: boolean) => {
-		await checkToken();
 		// 拉取数据 对比数据 上传数据
 		const name = getLocalstorageItem('name');
 		const access_token = getLocalstorageItem('access_token');
@@ -542,6 +541,10 @@ export default function MainHeader(props: IMainHeaderProps) {
 			)
 			.then((res: any) => {
 				console.log('先找下这个文件的信息', res);
+				if (res.status === 401) {
+					// 重新获取token
+					throw new Error('重新获取Token');
+				}
 				const { sha, content } = res.data;
 				if (!sha) {
 					throw new Error('不存在该文件，需要重新创建');
@@ -593,7 +596,7 @@ export default function MainHeader(props: IMainHeaderProps) {
 						console.log('文件上传成功', res);
 						const { commit } = res.data;
 						if (!commit) {
-							throw new Error('文件上传失败，请重试');
+							throw new Error('文件上传失败，请重试2');
 						}
 						showToast && message.destroy();
 						showToast && message.success('同步成功', 1);
@@ -602,10 +605,16 @@ export default function MainHeader(props: IMainHeaderProps) {
 					.catch((err: any) => {
 						console.log('出错了', err);
 						showToast && message.destroy();
-						showToast && Message.error('文件上传失败，请重试', 1);
+						showToast && Message.error('文件上传失败，请重试3', 1);
 					});
 			})
 			.catch((err: any) => {
+				console.log('err', err.message);
+				if (err.message === '重新获取Token') {
+					return checkToken().then(() => {
+						uploadDataHandler(false);
+					});
+				}
 				showToast && message.destroy();
 				showToast && Message.error('仓库中不存在该文件，请重新登录', 1);
 			});
@@ -613,6 +622,10 @@ export default function MainHeader(props: IMainHeaderProps) {
 	// 检查token是否过期
 	const checkToken = async () => {
 		const refresh_token = getLocalstorageItem('refresh_token');
+		console.log('打印这个refresh_token', refresh_token);
+		if (!refresh_token) {
+			return;
+		}
 		return http
 			.fetch(
 				`https://gitee.com/oauth/token?grant_type=refresh_token&refresh_token=${refresh_token}`,
@@ -630,6 +643,7 @@ export default function MainHeader(props: IMainHeaderProps) {
 					scope,
 					token_type,
 				} = res.data;
+				console.log(access_token, 'access_token');
 				if (!access_token) {
 					throw new Error('登录过期,请重新登录');
 				}
@@ -659,11 +673,17 @@ export default function MainHeader(props: IMainHeaderProps) {
 	};
 	useEffect(() => {
 		// 每隔一分钟同步一次数据
-		avatarUrl &&
-			setInterval(() => {
+		let timer: number;
+		if (avatarUrl) {
+			timer = setInterval(() => {
+				console.log('重新同步');
 				uploadDataHandler(false);
-			}, 60000);
-	}, []);
+			}, 10000);
+		}
+		return () => {
+			clearInterval(timer);
+		};
+	}, [avatarUrl]);
 	return (
 		<div
 			data-tauri-drag-region
@@ -676,15 +696,14 @@ export default function MainHeader(props: IMainHeaderProps) {
 				</Tooltip>
 			</div>
 			<div className={`${DEFAULTCLASS}-right`}>
-				<div
-					className={`${DEFAULTCLASS}-right-setting`}
-					onClick={() => {
-						uploadDataHandler(true);
-					}}
-				>
+				<div className={`${DEFAULTCLASS}-right-setting`}>
 					{avatarUrl !== '' && avatarUrl !== null && (
 						<Tooltip placement="left" title="同步数据">
-							<CloudUploadOutlined />
+							<CloudUploadOutlined
+								onClick={() => {
+									uploadDataHandler(true);
+								}}
+							/>
 						</Tooltip>
 					)}
 				</div>
