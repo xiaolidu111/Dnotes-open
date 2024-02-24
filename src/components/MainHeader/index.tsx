@@ -136,7 +136,7 @@ export default function MainHeader(props: IMainHeaderProps) {
 						setAvatarurl(avatar_url);
 						// 查看用户是否已经有这个文件的信息
 						http.fetch(
-							`https://gitee.com/api/v5/repos/${name}/DNotes/contents/appdata%2Fappdata.txt?access_token=${access_token}`
+							`https://gitee.com/api/v5/repos/${name}/DNotesData/contents/appdata%2Fappdata.txt?access_token=${access_token}`
 						)
 							.then((res: any) => {
 								console.log('先找下这个文件的信息', res);
@@ -184,7 +184,7 @@ export default function MainHeader(props: IMainHeaderProps) {
 								);
 								// 将base64格式的内容上传
 								http.fetch(
-									`https://gitee.com/api/v5/repos/${name}/DNotes/contents/appdata%2Fappdata.txt`,
+									`https://gitee.com/api/v5/repos/${name}/DNotesData/contents/appdata%2Fappdata.txt`,
 									{
 										method: 'PUT',
 										body: http.Body.json({
@@ -228,7 +228,7 @@ export default function MainHeader(props: IMainHeaderProps) {
 										method: 'POST',
 										body: http.Body.json({
 											access_token: access_token,
-											name: 'DNotes',
+											name: 'DNotesData',
 											has_issues: true,
 											has_wiki: true,
 											can_comment: true,
@@ -245,7 +245,7 @@ export default function MainHeader(props: IMainHeaderProps) {
 										}
 										// 创建一个文件夹新建一个文件
 										http.fetch(
-											`https://gitee.com/api/v5/repos/${name}/DNotes/contents/appdata%2Fappdata.txt`,
+											`https://gitee.com/api/v5/repos/${name}/DNotesData/contents/appdata%2Fappdata.txt`,
 											{
 												method: 'POST',
 												body: http.Body.json({
@@ -287,7 +287,7 @@ export default function MainHeader(props: IMainHeaderProps) {
 										console.log('仓库已存在', err);
 										// 创建一个文件夹新建一个文件
 										http.fetch(
-											`https://gitee.com/api/v5/repos/${name}/DNotes/contents/appdata%2Fappdata.txt`,
+											`https://gitee.com/api/v5/repos/${name}/DNotesData/contents/appdata%2Fappdata.txt`,
 											{
 												method: 'POST',
 												body: http.Body.json({
@@ -537,7 +537,7 @@ export default function MainHeader(props: IMainHeaderProps) {
 		// 查看文件内容信息
 		return http
 			.fetch(
-				`https://gitee.com/api/v5/repos/${name}/DNotes/contents/appdata%2Fappdata.txt?access_token=${access_token}`
+				`https://gitee.com/api/v5/repos/${name}/DNotesData/contents/appdata%2Fappdata.txt?access_token=${access_token}`
 			)
 			.then((res: any) => {
 				console.log('先找下这个文件的信息', res);
@@ -581,7 +581,7 @@ export default function MainHeader(props: IMainHeaderProps) {
 				// 将base64格式的内容上传
 				return http
 					.fetch(
-						`https://gitee.com/api/v5/repos/${name}/DNotes/contents/appdata%2Fappdata.txt`,
+						`https://gitee.com/api/v5/repos/${name}/DNotesData/contents/appdata%2Fappdata.txt`,
 						{
 							method: 'PUT',
 							body: http.Body.json({
@@ -678,7 +678,7 @@ export default function MainHeader(props: IMainHeaderProps) {
 			timer = setInterval(() => {
 				console.log('重新同步');
 				uploadDataHandler(false);
-			}, 10000);
+			}, 600000);
 		}
 		return () => {
 			clearInterval(timer);
@@ -940,7 +940,7 @@ export default function MainHeader(props: IMainHeaderProps) {
 // const handleFileInfo = async (access_token: string, name: string) => {
 // 	try {
 // 		const res = await http.fetch(
-// 			` https://gitee.com/api/v5/repos/${name}/DNotes/contents/appdata%2Fappdata.txt?access_token=${access_token}`
+// 			` https://gitee.com/api/v5/repos/${name}/DNotesData/contents/appdata%2Fappdata.txt?access_token=${access_token}`
 // 		);
 // 		console.log('先找下这个文件的信息', res);
 // 		const { sha, content } = res.data;
