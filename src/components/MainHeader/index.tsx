@@ -67,275 +67,242 @@ export default function MainHeader(props: IMainHeaderProps) {
 	// 切换颜色
 	const [isShowMenu, setIsShowMenu] = useState<boolean>(false);
 	const location = useLocation();
-	const onFinish = (values: any) => {
+	const onFinish = async (values: any) => {
 		setLoginBtnDisable(true);
 		console.log('Success:', values);
 		// 拿到用户输入的用户名和密码
 		const { username, password } = values;
 		// 调用登录接口完成登录
 		// 拿到用户的accesstoken
-		http.fetch('https://gitee.com/oauth/token', {
-			method: 'POST',
-			body: http.Body.json({
-				grant_type: 'password',
-				username: username,
-				password: password,
-				client_id:
-					'f7350fb2dd02f01f5d184c4dff5c0db7da3cbf6d80d4bebf385a14ed18a96e68',
-				client_secret:
-					'1cdf5565291a57ae0d9a8d5b6018dc69cb99bc856220250776d0e44d871d23a1',
-				scope: 'user_info projects pull_requests issues notes keys hook groups gists enterprises',
-			}),
-		})
-			.then((res: any) => {
-				console.log('登录的数据', res);
-				const {
-					access_token,
-					created_at,
-					expires_in,
-					refresh_token,
-					scope,
-					token_type,
-				} = res.data;
-				console.log(
-					'access_token,created_at,expires_in,refresh_token,scope,token_type',
-					access_token,
-					created_at,
-					expires_in,
-					refresh_token,
-					scope,
-					token_type
-				);
-				if (!access_token) {
-					throw new Error('用户名或密码错误');
+
+		try {
+			const loginRes = await http.fetch('https://gitee.com/oauth/token', {
+				method: 'POST',
+				body: http.Body.json({
+					grant_type: 'password',
+					username: username,
+					password: password,
+					client_id:
+						'f7350fb2dd02f01f5d184c4dff5c0db7da3cbf6d80d4bebf385a14ed18a96e68',
+					client_secret:
+						'1cdf5565291a57ae0d9a8d5b6018dc69cb99bc856220250776d0e44d871d23a1',
+					scope: 'user_info projects pull_requests issues notes keys hook groups gists enterprises',
+				}),
+			});
+			console.log('登录的数据', loginRes);
+			const {
+				access_token,
+				created_at,
+				expires_in,
+				refresh_token,
+				scope,
+				token_type,
+			} = loginRes.data as {
+				access_token: string;
+				created_at: string;
+				expires_in: string;
+				refresh_token: string;
+				scope: string;
+				token_type: string;
+			};
+			console.log(
+				'access_token,created_at,expires_in,refresh_token,scope,token_type',
+				access_token,
+				created_at,
+				expires_in,
+				refresh_token,
+				scope,
+				token_type
+			);
+			if (!access_token) {
+				throw new Error('用户名或密码错误');
+			}
+			// 数据存入localstorage
+			setLocalstorageItem('access_token', access_token);
+			setLocalstorageItem('created_at', created_at);
+			setLocalstorageItem('expires_in', expires_in);
+			setLocalstorageItem('refresh_token', refresh_token);
+			setLocalstorageItem('scope', scope);
+			setLocalstorageItem('token_type', token_type);
+
+			// 获取用户信息 头像用户名
+			const userInfoRes = await http.fetch(
+				`https://gitee.com/api/v5/user?access_token=${access_token}`,
+				{
+					method: 'GET',
 				}
+			);
+			console.log('拿到的用户信息', userInfoRes);
+			const { avatar_url, name } = userInfoRes.data as {
+				avatar_url: string;
+				name: string;
+			};
+			if (!avatar_url) {
+				throw new Error('用户信息获取失败');
+			}
+			// 存储到本地
+			setLocalstorageItem('avatar_url', avatar_url);
+			setLocalstorageItem('name', name);
+			setAvatarurl(avatar_url);
 
-				// 数据存入localstorage
-				setLocalstorageItem('access_token', access_token);
-				setLocalstorageItem('created_at', created_at);
-				setLocalstorageItem('expires_in', expires_in);
-				setLocalstorageItem('refresh_token', refresh_token);
-				setLocalstorageItem('scope', scope);
-				setLocalstorageItem('token_type', token_type);
-				// 获取用户信息 头像用户名
-				http.fetch(
-					`https://gitee.com/api/v5/user?access_token=${access_token}`,
-					{
-						method: 'GET',
-					}
-				)
-					.then((res: any) => {
-						console.log('拿到的用户信息', res);
-						const { avatar_url, name } = res.data;
-						if (!avatar_url) {
-							throw new Error('用户信息获取失败');
+			// 查看用户是否已经有这个文件的信息
+			const isHavenFileRes = await http.fetch(
+				`https://gitee.com/api/v5/repos/${name}/DNotesData/contents/appdata%2Fappdata.txt?access_token=${access_token}`
+			);
+			console.log('先找下这个文件的信息', isHavenFileRes);
+			const { sha, content } = isHavenFileRes.data as {
+				sha: string;
+				content: string;
+			};
+			if (!sha) {
+				throw new Error('不存在该文件，需要重新创建');
+			}
+			// 把sha存储在localstorage中
+			setLocalstorageItem('sha', sha);
+			console.log('content', content);
+			// 有这个文件 解码文件内容 和本地数据进行对比 将对比结果上传到文件中
+			const cloudFileContent = JSON.parse(decode64(content));
+			console.log('cloudFileContent', cloudFileContent);
+			// 拿到云端数据 和本地数据进行对比
+			// 拿到本地数据
+			const localDNotesList = getLocalDNotesList();
+
+			// 合并两个数据
+			const mergeList = mergeArrays(
+				localDNotesList,
+				cloudFileContent as IState[]
+			);
+			console.log('合并后的数据', mergeList);
+			// 将合并后的数据存储到本地
+			setLocalDNotesList(mergeList);
+			// 将数据上传到仓库中
+			// 将数据转换成字符串 转换成 base64格式
+			const mergeListString = encode64(JSON.stringify(mergeList));
+			console.log(
+				'mergeListString',
+				mergeListString,
+				JSON.stringify(mergeList)
+			);
+			// 将base64格式的内容上传
+			const uploadDataRes = await http.fetch(
+				`https://gitee.com/api/v5/repos/${name}/DNotesData/contents/appdata%2Fappdata.txt`,
+				{
+					method: 'PUT',
+					body: http.Body.json({
+						access_token: access_token,
+						content: mergeListString,
+						sha: sha,
+						message: '上传文件',
+					}),
+				}
+			);
+			console.log('文件上传成功', uploadDataRes);
+			const { commit } = uploadDataRes.data as { commit: string };
+			if (!commit) {
+				throw new Error('文件上传失败，请重试1');
+			}
+			hideModal();
+			Message.success('登录成功', 1);
+		} catch (err: any) {
+			console.log('出错了', err, 'err.message', err.message);
+			if (err.message === '文件上传失败，请重试1') {
+				Message.error('文件上传失败，请重新登录', 1);
+				hideModal();
+			} else if (err.message === '不存在该文件，需要重新创建') {
+				try {
+					// 新创建一个名字叫做DNotes的仓库 并初始化
+					const reCreateFileRes = await http.fetch(
+						'https://gitee.com/api/v5/user/repos',
+						{
+							method: 'POST',
+							body: http.Body.json({
+								access_token:
+									getLocalstorageItem('access_token'),
+								name: 'DNotesData',
+								has_issues: true,
+								has_wiki: true,
+								can_comment: true,
+								auto_init: true,
+								private: true,
+							}),
 						}
-						// 存储到本地
-						setLocalstorageItem('avatar_url', avatar_url);
-						setLocalstorageItem('name', name);
-						setAvatarurl(avatar_url);
-						// 查看用户是否已经有这个文件的信息
-						http.fetch(
-							`https://gitee.com/api/v5/repos/${name}/DNotesData/contents/appdata%2Fappdata.txt?access_token=${access_token}`
-						)
-							.then((res: any) => {
-								console.log('先找下这个文件的信息', res);
-								const { sha, content } = res.data;
-								if (!sha) {
-									throw new Error(
-										'不存在该文件，需要重新创建'
-									);
-								}
-								// 把sha存储在localstorage中
-								setLocalstorageItem('sha', sha);
-								console.log('content', content);
-								// 有这个文件 解码文件内容 和本地数据进行对比 将对比结果上传到文件中
-								// const cloudFileContent = JSON.parse(
-								// 	decodeURIComponent(window.atob(content))
-								// );
-								const cloudFileContent = JSON.parse(
-									decode64(content)
-								);
-								console.log(
-									'cloudFileContent',
-									cloudFileContent
-								);
-								// 拿到云端数据 和本地数据进行对比
-								// 拿到本地数据
-								const localDNotesList = getLocalDNotesList();
+					);
+					console.log('创建仓库成功', reCreateFileRes);
+					const { error } = reCreateFileRes.data as { error: string };
+					if (error) {
+						throw new Error('仓库已存在');
+					}
+					// 创建一个文件夹新建一个文件
+					const reCreateFileTxtRes = await http.fetch(
+						`https://gitee.com/api/v5/repos/${name}/DNotesData/contents/appdata%2Fappdata.txt`,
+						{
+							method: 'POST',
+							body: http.Body.json({
+								access_token:
+									getLocalstorageItem('access_token'),
+								content:
+									'W3siaWQiOi0xLCJ0ZXh0Ijoi5qyi6L+O5L2/55SoZE5vdGVzLOWPjOWHu+S/ruaUueeslOiusCIsImNvbG9yTW9kZSI6eyJ0aXRsZSI6IiNmZmU3NzQiLCJjb250ZW50IjoiI2ZmZjFhMSJ9LCJsYXN0TW9kaWZpZWQiOjE3MDY3OTcwNDgxODh9XQ==',
+								message: '1',
+							}),
+						}
+					);
+					console.log('创建新文件成功', reCreateFileTxtRes);
+					hideModal();
 
-								// 合并两个数据
-								const mergeList = mergeArrays(
-									localDNotesList,
-									cloudFileContent as IState[]
-								);
-								console.log('合并后的数据', mergeList);
-								// 将合并后的数据存储到本地
-								setLocalDNotesList(mergeList);
-								// 将数据上传到仓库中
-								// 将数据转换成字符串 转换成 base64格式
-								const mergeListString = encode64(
-									JSON.stringify(mergeList)
-								);
-								console.log(
-									'mergeListString',
-									mergeListString,
-									JSON.stringify(mergeList)
-								);
-								// 将base64格式的内容上传
-								http.fetch(
-									`https://gitee.com/api/v5/repos/${name}/DNotesData/contents/appdata%2Fappdata.txt`,
-									{
-										method: 'PUT',
-										body: http.Body.json({
-											access_token: access_token,
-											content: mergeListString,
-											sha: sha,
-											message: '上传文件',
-										}),
-									}
-								)
-									.then((res: any) => {
-										console.log('文件上传成功', res);
-										const { commit } = res.data;
-										if (!commit) {
-											throw new Error(
-												'文件上传失败，请重试1'
-											);
-										}
-										hideModal();
-										Message.success('登录成功', 1);
-									})
-									.catch((err: any) => {
-										console.log('出错了', err);
-
-										Message.error(
-											'文件上传失败，请重新登录',
-											1
-										);
-										hideModal();
-									});
-							})
-							.catch((err: any) => {
-								console.log(
-									'获取文件信息失败，不存在文件需要重建',
-									err
-								);
-								// 新创建一个名字叫做DNotes的仓库 并初始化
-								http.fetch(
-									'https://gitee.com/api/v5/user/repos',
-									{
-										method: 'POST',
-										body: http.Body.json({
-											access_token: access_token,
-											name: 'DNotesData',
-											has_issues: true,
-											has_wiki: true,
-											can_comment: true,
-											auto_init: true,
-											private: true,
-										}),
-									}
-								)
-									.then((res: any) => {
-										console.log('创建仓库成功', res);
-										const { error } = res.data;
-										if (error) {
-											throw new Error('仓库已存在');
-										}
-										// 创建一个文件夹新建一个文件
-										http.fetch(
-											`https://gitee.com/api/v5/repos/${name}/DNotesData/contents/appdata%2Fappdata.txt`,
-											{
-												method: 'POST',
-												body: http.Body.json({
-													access_token: access_token,
-													content:
-														'W3siaWQiOi0xLCJ0ZXh0Ijoi5qyi6L+O5L2/55SoZE5vdGVzLOWPjOWHu+S/ruaUueeslOiusCIsImNvbG9yTW9kZSI6eyJ0aXRsZSI6IiNmZmU3NzQiLCJjb250ZW50IjoiI2ZmZjFhMSJ9LCJsYXN0TW9kaWZpZWQiOjE3MDY3OTcwNDgxODh9XQ==',
-													message: '1',
-												}),
-											}
-										)
-											.then((res: any) => {
-												console.log(
-													'创建新文件成功',
-													res
-												);
-												hideModal();
-
-												Message.success('登录成功', 1);
-												if (res.status === 400) {
-													throw new Error(
-														'创建文件失败'
-													);
-												}
-											})
-											.catch((err: any) => {
-												console.log(
-													'创建文件失败，请重试',
-													err
-												);
-
-												Message.error(
-													'创建文件失败，请重新登录',
-													1
-												);
-												hideModal();
-											});
-									})
-									.catch((err: any) => {
-										console.log('仓库已存在', err);
-										// 创建一个文件夹新建一个文件
-										http.fetch(
-											`https://gitee.com/api/v5/repos/${name}/DNotesData/contents/appdata%2Fappdata.txt`,
-											{
-												method: 'POST',
-												body: http.Body.json({
-													access_token: access_token,
-													content:
-														'W3siaWQiOi0xLCJ0ZXh0Ijoi5qyi6L+O5L2/55SoZE5vdGVzLOWPjOWHu+S/ruaUueeslOiusCIsImNvbG9yTW9kZSI6eyJ0aXRsZSI6IiNmZmU3NzQiLCJjb250ZW50IjoiI2ZmZjFhMSJ9LCJsYXN0TW9kaWZpZWQiOjE3MDY3OTcwNDgxODh9XQ==',
-													message: '1',
-												}),
-											}
-										)
-											.then((res: any) => {
-												console.log(
-													'创建新文件成功',
-													res
-												);
-												hideModal();
-
-												Message.success('登录成功', 1);
-												if (res.status === 400) {
-													throw new Error(
-														'文件已存在'
-													);
-												}
-											})
-											.catch((err: any) => {
-												console.log(
-													'创建文件失败，请重试',
-													err
-												);
-
-												Message.error(
-													'创建文件失败，请重新登录',
-													1
-												);
-												hideModal();
-											});
-									});
-							});
-					})
-					.catch((err: any) => {
-						Message.error('用户信息获取失败，请重试', 1);
+					Message.success('登录成功', 1);
+					if (reCreateFileTxtRes.status === 400) {
+						throw new Error('创建文件失败');
+					}
+				} catch (err: any) {
+					if (err.message === '创建文件失败') {
+						console.log('创建文件失败，请重试', err);
+						Message.error('创建文件失败，请重新登录', 1);
 						hideModal();
-					});
-			})
-			.catch((err: any) => {
+					} else if (err.message === '仓库已存在') {
+						try {
+							console.log('仓库已存在', err);
+							// 创建一个文件夹新建一个文件
+							const reCreateFileTextRes = await http.fetch(
+								`https://gitee.com/api/v5/repos/${getLocalstorageItem(
+									'name'
+								)}/DNotesData/contents/appdata%2Fappdata.txt`,
+								{
+									method: 'POST',
+									body: http.Body.json({
+										access_token:
+											getLocalstorageItem('access_token'),
+										content:
+											'W3siaWQiOi0xLCJ0ZXh0Ijoi5qyi6L+O5L2/55SoZE5vdGVzLOWPjOWHu+S/ruaUueeslOiusCIsImNvbG9yTW9kZSI6eyJ0aXRsZSI6IiNmZmU3NzQiLCJjb250ZW50IjoiI2ZmZjFhMSJ9LCJsYXN0TW9kaWZpZWQiOjE3MDY3OTcwNDgxODh9XQ==',
+										message: '1',
+									}),
+								}
+							);
+							console.log('创建新文件成功', reCreateFileTextRes);
+							hideModal();
+
+							Message.success('登录成功', 1);
+							if (reCreateFileTextRes.status === 400) {
+								throw new Error('文件已存在');
+							}
+						} catch (err: any) {
+							console.log('文件已存在', err);
+							Message.error('网络出错请重试', 1);
+							hideModal();
+						}
+					} else {
+						Message.error(err.message, 3);
+					}
+				}
+			} else if (err.message === '用户信息获取失败') {
+				Message.error('用户信息获取失败，请重试', 1);
+				hideModal();
+			} else if (err.message === '用户名或密码错误') {
 				Message.error('登录失败，请检查输入信息和网略', 1);
 				hideModal();
-			});
+			} else {
+				Message.error(err.message, 3);
+			}
+		}
 	};
 
 	const onFinishFailed = (errorInfo: any) => {

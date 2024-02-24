@@ -51,7 +51,7 @@ export default function RichText(props: IRichTextProps) {
 		// 菜单 key
 		'bold',
 		// 'italic',
-		'fontSize',
+		// 'fontSize',
 		'underline',
 		'numberedList',
 		'code',
@@ -81,6 +81,7 @@ export default function RichText(props: IRichTextProps) {
 			setEditor(null);
 		};
 	}, [editor]);
+
 	return (
 		<>
 			<div
