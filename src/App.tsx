@@ -6,6 +6,7 @@ import SearchBox from './components/SearchBox';
 import DNotesContainer from './components/DNotesContainer/DNotesContainer';
 import { Route, Routes } from 'react-router-dom';
 import AddNotes from './components/AddNotes';
+import FundPage from './components/FundPage';
 
 function App() {
 	const [searchText, setSearchText] = useState<string>('');
@@ -24,6 +25,7 @@ function App() {
 					}
 				></Route>
 				<Route path="/addNew/:id" element={<AddNotes />}></Route>
+				<Route path="/fundPage" element={<FundPage />}></Route>
 			</Routes>
 		</div>
 	);

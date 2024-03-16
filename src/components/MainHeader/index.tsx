@@ -4,6 +4,7 @@ import {
 	CloseOutlined,
 	CloudUploadOutlined,
 	LoadingOutlined,
+	MoneyCollectOutlined,
 	PlusOutlined,
 	PushpinFilled,
 	PushpinOutlined,
@@ -277,6 +278,8 @@ export default function MainHeader(props: IMainHeaderProps) {
 		let win;
 		if (location.pathname === '/') {
 			win = WebviewWindow.getByLabel(`main`);
+		} else if (location.pathname === '/fundPage') {
+			win = WebviewWindow.getByLabel(`fundPage`);
 		} else {
 			const idNumberNow = Number(location.pathname.split('/')[2]);
 			setIdNumber(idNumberNow);
@@ -360,8 +363,12 @@ export default function MainHeader(props: IMainHeaderProps) {
 		});
 	};
 	const closeHandler = async () => {
+		console.log('关闭', myWebview?.label);
 		if (myWebview?.label === 'main') {
 			await myWebview.minimize();
+		} else if (myWebview?.label === 'fundPage') {
+			console.log('jijin');
+			myWebview?.close();
 		} else {
 			// 拿到当前的内容 和 当前的id 拼接成数据 添加到redux中
 			const nowDnote = {
@@ -612,6 +619,17 @@ export default function MainHeader(props: IMainHeaderProps) {
 			clearInterval(timer);
 		};
 	}, [avatarUrl]);
+	// 显示基金窗口
+	const showFundPage = () => {
+		const webview = new WebviewWindow(`fundPage`, {
+			url: `fundPage`,
+			decorations: false,
+			width: 350,
+			height: 370,
+			center: true,
+			theme: 'light',
+		});
+	};
 	return (
 		<div
 			data-tauri-drag-region
@@ -624,6 +642,17 @@ export default function MainHeader(props: IMainHeaderProps) {
 				</Tooltip>
 			</div>
 			<div className={`${DEFAULTCLASS}-right`}>
+				<div className={`${DEFAULTCLASS}-right-setting`}>
+					{avatarUrl !== '' && avatarUrl !== null && (
+						<Tooltip placement="left" title="同步数据">
+							<MoneyCollectOutlined
+								onClick={() => {
+									showFundPage();
+								}}
+							/>
+						</Tooltip>
+					)}
+				</div>
 				<div className={`${DEFAULTCLASS}-right-setting`}>
 					{avatarUrl !== '' && avatarUrl !== null && (
 						<Tooltip placement="left" title="同步数据">
